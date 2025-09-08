@@ -22,6 +22,7 @@ import {
 } from "next-intl/server";
 import { ThemeProvider } from "next-themes";
 import { notFound } from "next/navigation";
+import { CategoryProvider } from "@/src/contexts/CategoryContext";
 
 type MetadataProps = {
   params: Promise<{ locale: string }>;
@@ -76,20 +77,22 @@ export default async function LocaleLayout({
         )}
       >
         <NextIntlClientProvider messages={messages}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme={siteConfig.defaultNextTheme}
-            enableSystem
-          >
-            {messages.LanguageDetection && <LanguageDetectionAlert />}
-            {messages.Header && <Header />}
+          <CategoryProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme={siteConfig.defaultNextTheme}
+              enableSystem
+            >
+              {messages.LanguageDetection && <LanguageDetectionAlert />}
+              {messages.Header && <Header />}
 
-            <main className="flex-1 flex flex-col items-center">
-              {children}
-            </main>
+              <main className="flex-1 flex flex-col items-center">
+                {children}
+              </main>
 
-            {messages.Footer && <Footer />}
-          </ThemeProvider>
+              {messages.Footer && <Footer />}
+            </ThemeProvider>
+          </CategoryProvider>
         </NextIntlClientProvider>
         <TailwindIndicator />
         {process.env.NODE_ENV === "development" ? (
