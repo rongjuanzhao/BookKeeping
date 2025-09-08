@@ -211,9 +211,6 @@ const Overview = () => {
       <main className="flex-1 ml-60 bg-gray-100 min-h-screen w-[calc(100%-240px)] box-border">
         <header className="p-8 bg-white shadow-sm flex justify-between items-center">
           <h2 className='text-3xl font-bold text-red-500'>资产总览</h2>
-          <text className='text-sm text-red-500'>总资产：¥{totalAssets.toLocaleString()}</text>
-          <text className='text-sm text-red-500'>净资产：¥{netWorth.toLocaleString()}</text>
-          <text className='text-sm text-red-500'>负债：¥{liabilitiesData.toLocaleString()}</text>
           <Button 
             variant="outline" 
             size="default"
