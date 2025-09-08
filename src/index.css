@@ -1,0 +1,29 @@
+/* Custom CSS variables for theming */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* Custom styles that complement Tailwind */
+.logo {
+  @apply h-16 bg-white/20 m-4 text-white text-lg flex items-center justify-center;
+}
+
+.nav-item {
+  @apply h-16 m-4 text-white text-lg flex items-center justify-center;
+}
+
+.ant-card {
+  @apply rounded-lg shadow-lg;
+}
+
+.ant-statistic-content {
+  @apply text-xl;
+}
