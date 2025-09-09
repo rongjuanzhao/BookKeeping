@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import Form from './Form';
-import Sidebar from './Sidebar';
-import SankeyDiagram from './SankeyDiagram';
-import AssetUpdateModal from './AssetUpdateModal';
 import { Button } from '@/components/ui/button';
+import { useEffect, useRef, useState } from 'react';
+import AssetUpdateModal from './AssetUpdateModal';
+import SankeyDiagram from './SankeyDiagram';
 
 // 定义资产数据类型
 interface AssetsData {
@@ -47,16 +45,16 @@ const Overview = () => {
       try {
         const response = await fetch('/api/bills');
         console.log('API响应状态:', response.status);
-        
+
         if (response.ok) {
           const text = await response.text();
           console.log('API原始响应:', text);
-          
+
           if (text && text !== 'bills' && text.length > 5) {
             try {
               const data = JSON.parse(text);
               console.log('解析后的数据:', data);
-              
+
               if (data && data.length > 0 && data[0].description) {
                 setAssetsData(data[0].description);
               } else {
@@ -143,7 +141,7 @@ const Overview = () => {
 
     // 只在API调用失败时使用默认数据
     // 移除直接设置默认数据的代码
-    
+
     // 实际调用fetchData函数获取数据
     fetchData();
   }, []);
@@ -186,7 +184,7 @@ const Overview = () => {
     } catch (error) {
       console.error('保存数据时出错:', error);
     }
-    
+
     console.log('关闭模态框');
     setModalVisible(false); // 关闭模态框
   };
@@ -206,13 +204,13 @@ const Overview = () => {
   const liabilitiesData = assetsData.carLoan + assetsData.mortgage + assetsData.borrowing;
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <Sidebar />
-      <main className="flex-1 ml-60 bg-gray-100 min-h-screen w-[calc(100%-240px)] box-border">
-        <header className="p-8 bg-white shadow-sm flex justify-between items-center">
-          <h2 className='text-3xl font-bold text-red-500'>资产总览</h2>
-          <Button 
-            variant="outline" 
+    <div className="flex min-h-screen bg-white w-full">
+      {/* <Sidebar /> */}
+      <main className="flex-1  bg-white min-h-screen w-full box-border">
+        <header className="p-4 md:p-6 lg:p-8 bg-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h2 className='text-2xl md:text-3xl font-bold text-red-500'>资产总览</h2>
+          <Button
+            variant="outline"
             size="default"
             onClick={() => {
               console.log('按钮被点击，准备显示弹窗');
@@ -230,35 +228,34 @@ const Overview = () => {
           onSubmit={handleSubmit}
         />
 
-        <div className="p-6 flex flex-col gap-8">
+        <div className="p-4 md:p-6 flex flex-col gap-6 md:gap-8">
           {/* 资产总览 - 上半部分 */}
-          <div className="bg-white rounded-xl p-8 shadow-sm">
-            <h3 className="text-xl font-semibold mb-6">资产总览</h3>
-            <div className="flex justify-between items-center gap-8 my-6">
-              <div className="flex-1 text-center p-6 bg-gray-100 rounded-lg border border-gray-200">
-                <label className="block text-gray-500 text-sm font-medium mb-3 uppercase tracking-wider">总资产</label>
-                <div className="text-3xl font-bold text-gray-800">¥{totalAssets.toLocaleString()}</div>
+          <div className="bg-white rounded-xl p-4 md:p-6 lg:p-8 shadow-sm">
+            <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">资产总览</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 lg:gap-8 my-4 md:my-6">
+              <div className="text-center p-4 md:p-6 bg-gray-100 rounded-lg border border-gray-200">
+                <label className="block text-gray-500 text-xs md:text-sm font-medium mb-2 md:mb-3 uppercase tracking-wider">总资产</label>
+                <div className="text-xl md:text-3xl font-bold text-gray-800">¥{totalAssets.toLocaleString()}</div>
               </div>
-              <div className="flex-1 text-center p-6 bg-gray-100 rounded-lg border border-gray-200">
-                <label className="block text-gray-500 text-sm font-medium mb-3 uppercase tracking-wider">净资产</label>
-                <div className="text-3xl font-bold text-gray-800">¥{netWorth.toLocaleString()}</div>
+              <div className="text-center p-4 md:p-6 bg-gray-100 rounded-lg border border-gray-200">
+                <label className="block text-gray-500 text-xs md:text-sm font-medium mb-2 md:mb-3 uppercase tracking-wider">净资产</label>
+                <div className="text-xl md:text-3xl font-bold text-gray-800">¥{netWorth.toLocaleString()}</div>
               </div>
-              <div className="flex-1 text-center p-6 bg-gray-100 rounded-lg border border-gray-200">
-                <label className="block text-gray-500 text-sm font-medium mb-3 uppercase tracking-wider">负债</label>
-                <div className="text-3xl font-bold text-red-600">¥{liabilitiesData.toLocaleString()}</div>
+              <div className="text-center p-4 md:p-6 bg-gray-100 rounded-lg border border-gray-200">
+                <label className="block text-gray-500 text-xs md:text-sm font-medium mb-2 md:mb-3 uppercase tracking-wider">负债</label>
+                <div className="text-xl md:text-3xl font-bold text-red-600">¥{liabilitiesData.toLocaleString()}</div>
               </div>
             </div>
           </div>
-          
+
           {/* 资产构成 - 下半部分 */}
-          <div className="bg-white rounded-xl p-8 shadow-sm">
-            <h3 className="text-xl font-semibold mb-6">资产构成</h3>
+          <div className="bg-white rounded-xl p-4 md:p-6 lg:p-8 shadow-sm">
+            <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">资产构成</h3>
             <div
               ref={chartRef}
-              className="w-full min-h-[500px] bg-white rounded-lg p-5 mt-5"
-              style={{ width: '100%', height: '500px' }}
+              className="w-full min-h-[300px] md:min-h-[400px] lg:min-h-[500px] bg-white rounded-lg p-3 md:p-5 mt-3 md:mt-5"
             >
-              <SankeyDiagram 
+              <SankeyDiagram
                 data={assetsData}
               />
             </div>

@@ -2,7 +2,6 @@ import BaiDuAnalytics from "@/app/BaiDuAnalytics";
 import GoogleAdsense from "@/app/GoogleAdsense";
 import GoogleAnalytics from "@/app/GoogleAnalytics";
 import PlausibleAnalytics from "@/app/PlausibleAnalytics";
-import Footer from "@/components/footer/Footer";
 import Header from "@/components/header/Header";
 import { LanguageDetectionAlert } from "@/components/LanguageDetectionAlert";
 import { TailwindIndicator } from "@/components/TailwindIndicator";
@@ -10,6 +9,7 @@ import { siteConfig } from "@/config/site";
 import { DEFAULT_LOCALE, Locale, routing } from "@/i18n/routing";
 import { constructMetadata } from "@/lib/metadata";
 import { cn } from "@/lib/utils";
+import { CategoryProvider } from "@/src/contexts/CategoryContext";
 import "@/styles/globals.css";
 import "@/styles/loading.css";
 import { Analytics } from "@vercel/analytics/react";
@@ -22,7 +22,6 @@ import {
 } from "next-intl/server";
 import { ThemeProvider } from "next-themes";
 import { notFound } from "next/navigation";
-import { CategoryProvider } from "@/src/contexts/CategoryContext";
 
 type MetadataProps = {
   params: Promise<{ locale: string }>;
@@ -90,7 +89,7 @@ export default async function LocaleLayout({
                 {children}
               </main>
 
-              {messages.Footer && <Footer />}
+              {/* {messages.Footer && <Footer />} */}
             </ThemeProvider>
           </CategoryProvider>
         </NextIntlClientProvider>

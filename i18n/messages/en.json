@@ -8,24 +8,12 @@
   "Header": {
     "links": [
       {
-        "name": "Blog",
-        "href": "/blog"
+        "name": "Overview",
+        "href": "/book"
       },
       {
-        "name": "About",
-        "href": "/about"
-      },
-      {
-        "name": "Source Code",
-        "href": "https://github.com/weijunext/nextjs-15-starter",
-        "target": "_blank",
-        "rel": "noopener noreferrer nofollow"
-      },
-      {
-        "name": "Pro Version",
-        "href": "https://nexty.dev",
-        "target": "_blank",
-        "rel": "noopener noreferrer"
+        "name": "Category_Management",
+        "href": "/category-management"
       }
     ]
   },
