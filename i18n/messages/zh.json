@@ -8,24 +8,12 @@
   "Header": {
     "links": [
       {
-        "name": "博客",
-        "href": "/blog"
+        "name": "概览",
+        "href": "/overview"
       },
       {
-        "name": "关于",
-        "href": "/about"
-      },
-      {
-        "name": "源码",
-        "href": "https://github.com/weijunext/nextjs-15-starter",
-        "target": "_blank",
-        "rel": "noopener noreferrer nofollow"
-      },
-      {
-        "name": "高级版",
-        "href": "https://nexty.dev",
-        "target": "_blank",
-        "rel": "noopener noreferrer"
+        "name": "分类管理",
+        "href": "/category-management"
       }
     ]
   },

@@ -157,6 +157,7 @@ const Overview = () => {
   const handleSubmit = async (formData: any) => {
     try {
       console.log('提交表单数据:', formData);
+
       // 发送数据到后端API
       const response = await fetch('/api/bills', {
         method: 'POST',
@@ -168,39 +169,35 @@ const Overview = () => {
 
       if (response.ok) {
         console.log('数据保存成功');
-        // 更新本地状态
+        // 立即更新本地状态以反映用户输入的数据
         setAssetsData(formData);
-        // 重新获取数据以确保显示最新数据
-        const fetchResponse = await fetch('/api/bills');
-        if (fetchResponse.ok) {
-          const data = await fetchResponse.json();
-          if (data && data.length > 0 && data[0].description) {
-            setAssetsData(data[0].description);
-          }
-        }
       } else {
-        console.error('数据保存失败');
+        console.error('数据保存失败，状态:', response.status);
+        // 尝试获取错误详情
+        try {
+          const errorData = await response.json();
+          console.error('错误详情:', errorData);
+        } catch (e) {
+          console.error('无法获取错误详情');
+        }
       }
     } catch (error) {
       console.error('保存数据时出错:', error);
     }
 
-    console.log('关闭模态框');
     setModalVisible(false); // 关闭模态框
   };
 
-  // 计算总资产
-  // const totalAssets = Object.values(assetsData).reduce((sum, value) => sum + value, 0);
-
+  // 计算总资产（资产减去负债）
   const totalAssets = Object.entries(assetsData).reduce((sum, [key, value]) => {
     const liabilities = ['carLoan', 'mortgage', 'borrowing'];
     return liabilities.includes(key) ? sum - value : sum + value;
   }, 0);
 
-
   // 计算净资产（总资产减去固定资产和他人借款）
   const netWorth = totalAssets - (assetsData.car + assetsData.house + assetsData.receivable);
-  //计算负债数据
+
+  // 计算负债数据
   const liabilitiesData = assetsData.carLoan + assetsData.mortgage + assetsData.borrowing;
 
   return (
@@ -208,7 +205,7 @@ const Overview = () => {
       {/* <Sidebar /> */}
       <main className="flex-1  bg-white min-h-screen w-full box-border">
         <header className="p-4 md:p-6 lg:p-8 bg-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h2 className='text-2xl md:text-3xl font-bold text-red-500'>资产总览</h2>
+          <h2 className='text-2xl md:text-3xl font-bold text-black'>资产总览</h2>
           <Button
             variant="outline"
             size="default"
