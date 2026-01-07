@@ -80,7 +80,8 @@ const Form = ({ onUpdateData, onSubmit, initialData = {} }: FormProps) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const numericValue = Math.max(0, Number(value) || 0);
+    // 如果值为空字符串，设置为0，否则转换为数字
+    const numericValue = value === '' ? 0 : Math.max(0, Number(value) || 0);
     setFormData(prev => ({
       ...prev,
       [name]: numericValue
@@ -119,10 +120,10 @@ const Form = ({ onUpdateData, onSubmit, initialData = {} }: FormProps) => {
               <input className="p-3 border border-gray-300 rounded-lg w-full max-w-[300px] text-base transition-all duration-200 bg-white focus:outline-none focus:border-blue-500 focus:ring focus:ring-blue-200 hover:border-gray-500"
                 type="number"
                 name={fieldName}
-                value={formData[fieldName] !== undefined ? formData[fieldName] : 0}  // 使用formData中的值
+                value={formData[fieldName] !== undefined && formData[fieldName] !== 0 ? formData[fieldName] : ''}
                 onChange={handleChange}
                 min="0"
-                required
+                placeholder="0"
               />
             </div>
           );
