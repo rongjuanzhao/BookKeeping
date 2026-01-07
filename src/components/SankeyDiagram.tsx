@@ -77,6 +77,20 @@ const SankeyDiagram = ({ data }: SankeyDiagramProps) => {
             });
         });
 
+        // 计算"总资产"的总值，设置给总资产节点
+        const totalAssetsValue = links
+            .filter(link => {
+                const sourceNode = nodes.find(n => n.id === link.source);
+                return sourceNode && sourceNode.name === "总资产";
+            })
+            .reduce((sum, link) => sum + link.value, 0);
+
+        // 更新总资产节点的value
+        const totalNode = nodes.find(n => n.name === "总资产");
+        if (totalNode) {
+            totalNode.value = totalAssetsValue;
+        }
+
         return { nodes, links };
     };
 
@@ -231,7 +245,6 @@ const SankeyDiagram = ({ data }: SankeyDiagramProps) => {
             .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
-            .attr("class", "w-full h-[400px]")
             .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
 
@@ -248,8 +261,9 @@ const SankeyDiagram = ({ data }: SankeyDiagramProps) => {
 
         const sankeyGenerator = sankey()
             .nodeWidth(isMobile ? 15 : 20)
-            .nodePadding(isMobile ? 25 : 35)
+            .nodePadding(isMobile ? 30 : 45)
             .extent([[0, 0], [width, height]])
+            .nodeId((d: any) => d.id)
             .iterations(32); // 增加迭代次数以获得更好的布局
         sankeyGeneratorRef.current = sankeyGenerator;
 
@@ -260,17 +274,33 @@ const SankeyDiagram = ({ data }: SankeyDiagramProps) => {
             links: sankeyData.links
         });
 
+        // 对数据进行垂直缩放，增加节点高度
+        const verticalScale = 2.5; // 增加垂直缩放比例
+        const scaledNodes = sankeyData.nodes.map(d => Object.assign({}, d));
+        const scaledLinks = sankeyData.links.map(d => ({
+            source: d.source,
+            target: d.target,
+            value: d.value * verticalScale
+        }));
+
+        // 确保节点按正确的层级顺序排列：总资产 -> 分类 -> 详细项
+        const getNodeLayer = (nodeName: string) => {
+            if (nodeName === "总资产") return 0;
+            const allCategories = getAllCategoriesWithItems();
+            if (Object.keys(allCategories).includes(nodeName)) return 1;
+            return 2;
+        };
+
+        // 按层级排序节点
+        scaledNodes.sort((a: any, b: any) => getNodeLayer(a.name) - getNodeLayer(b.name));
+
         const { nodes, links } = sankeyGenerator({
-            nodes: sankeyData.nodes.map(d => Object.assign({}, d)),
-            links: sankeyData.links.map(d => ({
-                source: d.source,
-                target: d.target,
-                value: d.value
-            }))
+            nodes: scaledNodes,
+            links: scaledLinks
         });
 
         console.log('Sankey - Output from sankeyGenerator:', {
-            nodes: nodes.map(n => ({ name: n.name, value: n.value, x0: n.x0, x1: n.x1, y0: n.y0, y1: n.y1 })),
+            nodes: nodes.map((n: any) => ({ name: n.name, value: n.value, x0: n.x0, x1: n.x1, y0: n.y0, y1: n.y1 })),
             links: links.map(l => ({ value: l.value, width: l.width, source: l.source, target: l.target }))
         });
 
@@ -333,8 +363,9 @@ const SankeyDiagram = ({ data }: SankeyDiagramProps) => {
             .on("mouseover", function (event, d) {
                 d3.select(this)
                     .attr("stroke-opacity", 0.8);
+                const actualValue = Math.round(d.value / verticalScale);
                 tooltip.style("opacity", 1)
-                    .html(`<strong>金额:</strong> ¥${d.value.toLocaleString()}`)
+                    .html(`<strong>金额:</strong> ¥${actualValue.toLocaleString()}`)
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY - 10) + "px");
             })
@@ -425,7 +456,6 @@ const SankeyDiagram = ({ data }: SankeyDiagramProps) => {
 
             // 重新计算设备类型
             const currentIsMobile = window.innerWidth < 768;
-            const currentIsTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
 
             const newWidth = containerSize.width - margin.left - margin.right;
             const newHeight = containerSize.height - margin.top - margin.bottom;
@@ -501,7 +531,7 @@ const SankeyDiagram = ({ data }: SankeyDiagramProps) => {
                 }
             `}</style>
             <div
-                className="w-full h-[300px] md:h-[400px]"
+                className="w-full h-[400px] md:h-[600px] lg:h-[800px]"
                 style={{ width: '100%', height: '100%' }}
             >
                 <svg ref={svgRef} style={{ width: '100%', height: '100%' }} />
