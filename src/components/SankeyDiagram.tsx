@@ -16,7 +16,7 @@ const SankeyDiagram = ({ data }: SankeyDiagramProps) => {
     const tooltipRef = useRef<HTMLDivElement>(null);
     const { getAllCategoriesWithItems } = useCategories(); // 使用分类上下文
 
-    // 定义数据 - 重新设计为三层层级结构
+    // 定义数据 - 重新设计为新的拓扑结构
     const transformData = (assetsData: { [key: string]: number }) => {
         // 获取所有分类和子项
         const allCategories = getAllCategoriesWithItems();
@@ -29,117 +29,112 @@ const SankeyDiagram = ({ data }: SankeyDiagramProps) => {
         const nodeIdMap: { [key: string]: number } = {};
         let nodeId = 0;
 
-        // 层级1: 添加"净资产"和"负债"节点
-        nodes.push({ id: nodeId, name: "净资产", category: "net_assets", layer: 0 });
-        nodeIdMap["净资产"] = nodeId++;
-
-        nodes.push({ id: nodeId, name: "负债", category: "liabilities", layer: 0 });
-        nodeIdMap["负债"] = nodeId++;
-
-        // 计算净资产和负债的值
-        let netAssetsValue = 0;
+        // 计算总资产和负债
+        let totalAssetsValue = 0;
         let liabilitiesValue = 0;
 
-        // 层级2: 为每个资产分类创建节点
         const assetCategories = ['流动资金', '固定资产', '投资理财', '应收款项'];
 
+        // 计算总资产（所有资产分类的总和）
         assetCategories.forEach(category => {
             if (allCategories[category]) {
-                // 计算分类总值
                 const categoryValue = allCategories[category].reduce((sum, item, index) => {
                     const fieldName = convertToFieldName(category, item, index);
                     const value = assetsData[fieldName] || 0;
                     return sum + value;
                 }, 0);
-
-                // 只有当分类值大于0时才创建分类节点和连接
-                if (categoryValue > 0) {
-                    nodes.push({ id: nodeId, name: category, category: "asset_category", layer: 1 });
-                    nodeIdMap[category] = nodeId++;
-
-                    netAssetsValue += categoryValue;
-
-                    // 创建从"净资产"到分类的连接
-                    links.push({
-                        source: nodeIdMap["净资产"],
-                        target: nodeIdMap[category],
-                        value: Math.max(0.01, categoryValue)
-                    });
-
-                    // 层级3: 为每个子项创建节点（只显示值大于0的子项）
-                    allCategories[category].forEach((item, index) => {
-                        const fieldName = convertToFieldName(category, item, index);
-                        const itemValue = assetsData[fieldName] || 0;
-
-                        // 只有当值大于0时才创建节点和连接
-                        if (itemValue > 0) {
-                            nodes.push({ id: nodeId, name: item, category: "asset_detail", layer: 2 });
-                            nodeIdMap[item] = nodeId++;
-
-                            links.push({
-                                source: nodeIdMap[category],
-                                target: nodeIdMap[item],
-                                value: Math.max(0.01, itemValue)
-                            });
-                        }
-                    });
-                }
+                totalAssetsValue += categoryValue;
             }
         });
 
-        // 处理负债分类
+        // 计算负债总值
         if (allCategories['负债']) {
-            // 计算负债总值
-            const liabilityValue = allCategories['负债'].reduce((sum, item, index) => {
+            liabilitiesValue = allCategories['负债'].reduce((sum, item, index) => {
                 const fieldName = convertToFieldName('负债', item, index);
                 const value = assetsData[fieldName] || 0;
                 return sum + value;
             }, 0);
+        }
 
-            // 只有当负债总值大于0时才创建负债节点
-            if (liabilityValue > 0) {
-                liabilitiesValue = liabilityValue;
+        // 计算净资产（总资产 - 负债）
+        const netAssetsValue = totalAssetsValue - liabilitiesValue;
 
-                // 只有当值大于0时才创建从"负债"到负债子项的连接
-                allCategories['负债'].forEach((item, index) => {
-                    const fieldName = convertToFieldName('负债', item, index);
-                    const itemValue = assetsData[fieldName] || 0;
+        // 层级0: 添加"净资产"和"负债"节点
+        if (netAssetsValue > 0) {
+            nodes.push({ id: nodeId, name: "净资产", category: "net_assets", layer: 0, value: netAssetsValue });
+            nodeIdMap["净资产"] = nodeId++;
+        }
 
-                    if (itemValue > 0) {
-                        nodes.push({ id: nodeId, name: item, category: "liability_detail", layer: 1 });
-                        nodeIdMap[item] = nodeId++;
+        if (liabilitiesValue > 0) {
+            nodes.push({ id: nodeId, name: "负债", category: "liabilities", layer: 0, value: liabilitiesValue });
+            nodeIdMap["负债"] = nodeId++;
+        }
 
-                        links.push({
-                            source: nodeIdMap["负债"],
-                            target: nodeIdMap[item],
-                            value: Math.max(0.01, itemValue)
-                        });
-                    }
+        // 层级1: 添加"总资产"节点
+        if (totalAssetsValue > 0) {
+            nodes.push({ id: nodeId, name: "总资产", category: "total_assets", layer: 1, value: totalAssetsValue });
+            nodeIdMap["总资产"] = nodeId++;
+
+            // 创建从"净资产"到"总资产"的连接
+            if (netAssetsValue > 0) {
+                links.push({
+                    source: nodeIdMap["净资产"],
+                    target: nodeIdMap["总资产"],
+                    value: Math.max(0.01, netAssetsValue)
                 });
             }
-        }
 
-        // 设置净资产和负债节点的值（只添加有值的节点）
-        const netAssetsNode = nodes.find(n => n.name === "净资产");
-        if (netAssetsNode && netAssetsValue > 0) {
-            netAssetsNode.value = netAssetsValue;
-        } else if (netAssetsNode && netAssetsValue === 0) {
-            // 移除值为0的净资产节点
-            const nodeIndex = nodes.findIndex(n => n.name === "净资产");
-            if (nodeIndex > -1) {
-                nodes.splice(nodeIndex, 1);
+            // 创建从"负债"到"总资产"的连接
+            if (liabilitiesValue > 0) {
+                links.push({
+                    source: nodeIdMap["负债"],
+                    target: nodeIdMap["总资产"],
+                    value: Math.max(0.01, liabilitiesValue)
+                });
             }
-        }
 
-        const liabilitiesNode = nodes.find(n => n.name === "负债");
-        if (liabilitiesNode && liabilitiesValue > 0) {
-            liabilitiesNode.value = liabilitiesValue;
-        } else if (liabilitiesNode && liabilitiesValue === 0) {
-            // 移除值为0的负债节点
-            const nodeIndex = nodes.findIndex(n => n.name === "负债");
-            if (nodeIndex > -1) {
-                nodes.splice(nodeIndex, 1);
-            }
+            // 层级2: 为每个资产分类创建节点
+            assetCategories.forEach(category => {
+                if (allCategories[category]) {
+                    // 计算分类总值
+                    const categoryValue = allCategories[category].reduce((sum, item, index) => {
+                        const fieldName = convertToFieldName(category, item, index);
+                        const value = assetsData[fieldName] || 0;
+                        return sum + value;
+                    }, 0);
+
+                    // 只有当分类值大于0时才创建分类节点和连接
+                    if (categoryValue > 0) {
+                        nodes.push({ id: nodeId, name: category, category: "asset_category", layer: 2 });
+                        nodeIdMap[category] = nodeId++;
+
+                        // 创建从"总资产"到分类的连接
+                        links.push({
+                            source: nodeIdMap["总资产"],
+                            target: nodeIdMap[category],
+                            value: Math.max(0.01, categoryValue)
+                        });
+
+                        // 层级3: 为每个子项创建节点（只显示值大于0的子项）
+                        allCategories[category].forEach((item, index) => {
+                            const fieldName = convertToFieldName(category, item, index);
+                            const itemValue = assetsData[fieldName] || 0;
+
+                            // 只有当值大于0时才创建节点和连接
+                            if (itemValue > 0) {
+                                nodes.push({ id: nodeId, name: item, category: "asset_detail", layer: 3 });
+                                nodeIdMap[item] = nodeId++;
+
+                                links.push({
+                                    source: nodeIdMap[category],
+                                    target: nodeIdMap[item],
+                                    value: Math.max(0.01, itemValue)
+                                });
+                            }
+                        });
+                    }
+                }
+            });
         }
 
         return { nodes, links };
@@ -237,7 +232,7 @@ const SankeyDiagram = ({ data }: SankeyDiagramProps) => {
     const drawSankey = (sankeyData: { nodes: { id: number; name: string; category: string; layer: number; value?: number }[]; links: { source: number; target: number; value: number }[] }) => {
         // 设置固定图表尺寸
         const width = 900;
-        const height = 600;
+        const height = 500;  // 减少高度从600px到500px
         const margin = { top: 20, right: 150, bottom: 20, left: 150 };
 
         // 清理之前的图表
@@ -263,9 +258,10 @@ const SankeyDiagram = ({ data }: SankeyDiagramProps) => {
             const colorMap: { [key: string]: string } = {
                 "net_assets": "#4c78a8",      // 净资产 - 蓝色
                 "liabilities": "#e45756",      // 负债 - 红色
-                "asset_category": "#72b7b2",   // 资产分类 - 青色
+                "total_assets": "#72b7b2",     // 总资产 - 青色
+                "asset_category": "#f58518",   // 资产分类 - 橙色
                 "asset_detail": "#9d755d",     // 资产详细项 - 棕色
-                "liability_detail": "#f58518"  // 负债详细项 - 橙色
+                "liability_detail": "#eeca3b"  // 负债详细项 - 黄色
             };
             return colorMap[d.category] || colorScale(d.name);
         };
@@ -375,17 +371,21 @@ const SankeyDiagram = ({ data }: SankeyDiagramProps) => {
         node.append("text")
             .attr("x", d => {
                 const layer = (d as any).layer;
-                if (layer === 0) return -10;  // 左侧节点文字在左边
-                if (layer === 2) return (d.x1 || 0) - (d.x0 || 0) + 10;  // 右侧节点文字在右边
-                return ((d.x1 || 0) - (d.x0 || 0)) / 2;  // 中间节点文字居中
+                if (layer === 0) return -10;  // 左侧节点（净资产、负债）文字在左边
+                if (layer === 1) return ((d.x1 || 0) - (d.x0 || 0)) / 2;  // 总资产节点文字居中
+                if (layer === 2) return ((d.x1 || 0) - (d.x0 || 0)) / 2;  // 资产分类节点文字居中
+                if (layer === 3) return (d.x1 || 0) - (d.x0 || 0) + 10;  // 右侧节点（子项）文字在右边
+                return ((d.x1 || 0) - (d.x0 || 0)) / 2;  // 默认居中
             })
             .attr("y", d => ((d.y1 || 0) - (d.y0 || 0)) / 2)
             .attr("dy", "0.35em")
             .attr("text-anchor", d => {
                 const layer = (d as any).layer;
                 if (layer === 0) return "end";  // 左侧节点文字右对齐
-                if (layer === 2) return "start";  // 右侧节点文字左对齐
-                return "middle";  // 中间节点文字居中
+                if (layer === 1) return "middle";  // 总资产节点文字居中
+                if (layer === 2) return "middle";  // 资产分类节点文字居中
+                if (layer === 3) return "start";  // 右侧节点文字左对齐
+                return "middle";  // 默认居中
             })
             .attr("font-size", "12px")
             .attr("fill", "#666")  // 深灰色
@@ -415,7 +415,7 @@ const SankeyDiagram = ({ data }: SankeyDiagramProps) => {
             `}</style>
             <div
                 className="w-full mx-auto"
-                style={{ width: '1200px', height: '640px' }}
+                style={{ width: '1200px', height: '540px' }}  // 调整容器高度适应新的SVG尺寸
             >
                 <svg ref={svgRef} style={{ width: '100%', height: '100%' }} />
             </div>
