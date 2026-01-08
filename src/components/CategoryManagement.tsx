@@ -40,8 +40,10 @@ export default function CategoryManagement() {
         {Object.keys(defaultCategories).map(category => (
           <button
             key={category}
-            className={`p-3 border-none bg-gray-800 text-white rounded-lg cursor-pointer transition-all duration-300 flex items-center gap-2 ${
-              activeCategory === category ? 'bg-blue-500' : 'hover:bg-gray-700'
+            className={`p-3 border-none rounded-lg cursor-pointer transition-all duration-300 flex items-center gap-2 ${
+              activeCategory === category
+                ? 'bg-green-500 text-white'  // 选中的tab：绿色背景，与添加子项按钮保持一致
+                : 'bg-gray-200 text-black hover:bg-gray-300'  // 非选中的tab：浅灰色底色，黑色文字
             }`}
             onClick={() => setActiveCategory(category)}
           >
@@ -55,15 +57,13 @@ export default function CategoryManagement() {
         {Object.keys(categories).map(category => (
           activeCategory === category && (
             <div key={category} className="category-section mb-5">
-              <h3 className="text-gray-800 mb-5 text-lg">{defaultCategories[category].icon} {category}</h3>
-              
               <div className="items-list">
                 <h4 className="text-gray-400 my-2.5 text-sm">默认子项</h4>
                 <div className="default-items">
                   {categories[category]?.defaultItems?.map((item, index) => (
                     <div key={`default-${index}`} className="flex justify-between items-center p-3 my-1.5 rounded-lg border border-gray-400 text-gray-900">
                       <span>{item}</span>
-                      <span className="text-xs bg-gray-500 p-1 px-2 rounded-xl">默认</span>
+                      <span className="text-xs bg-gray-200 text-gray-700 p-1 px-2 rounded-xl">默认</span>
                     </div>
                   ))}
                 </div>
