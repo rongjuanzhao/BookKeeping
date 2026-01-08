@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useEffect, useRef, useState } from 'react';
 import AssetUpdateModal from './AssetUpdateModal';
 import SankeyDiagram from './SankeyDiagram';
+import UpdateRecordsModal from './UpdateRecordsModal';
 
 // 定义资产数据类型
 interface AssetsData {
@@ -24,6 +25,7 @@ interface AssetsData {
 const Overview = () => {
   const chartRef = useRef(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [updateRecordsModalVisible, setUpdateRecordsModalVisible] = useState(false);
   const [Liabilities, setLiabilities] = useState(233)
   const [assetsData, setAssetsData] = useState<AssetsData>({
     currentDeposit: 0, // 银行活期
@@ -206,16 +208,28 @@ const Overview = () => {
       <main className="flex-1  bg-white min-h-screen w-full box-border">
         <header className="p-4 md:p-6 lg:p-8 bg-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h2 className='text-2xl md:text-3xl font-bold text-black'>资产总览</h2>
-          <Button
-            variant="outline"
-            size="default"
-            onClick={() => {
-              console.log('按钮被点击，准备显示弹窗');
-              setModalVisible(true);
-            }}
-          >
-            更新资产
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="default"
+              onClick={() => {
+                console.log('更新记录按钮被点击');
+                setUpdateRecordsModalVisible(true);
+              }}
+            >
+              更新记录
+            </Button>
+            <Button
+              variant="outline"
+              size="default"
+              onClick={() => {
+                console.log('按钮被点击，准备显示弹窗');
+                setModalVisible(true);
+              }}
+            >
+              更新资产
+            </Button>
+          </div>
         </header>
 
         <AssetUpdateModal
@@ -223,6 +237,11 @@ const Overview = () => {
           onClose={() => setModalVisible(false)}
           initialData={assetsData as any}
           onSubmit={handleSubmit}
+        />
+
+        <UpdateRecordsModal
+          isVisible={updateRecordsModalVisible}
+          onClose={() => setUpdateRecordsModalVisible(false)}
         />
 
         <div className="p-4 md:p-6 flex flex-col gap-6 md:gap-8">

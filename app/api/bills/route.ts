@@ -44,13 +44,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log('POST /api/bills - 接收到的数据:', body);
 
-    // 先尝试查找现有记录
-    const existingBill = await prisma.bill.findFirst({
-      orderBy: { date: 'desc' }
-    });
-
-    console.log('POST /api/bills - 现有记录:', existingBill);
-
     // 将前端发送的扁平数据结构转换为Bill模型
     const billData = {
       title: '资产数据',
@@ -63,21 +56,11 @@ export async function POST(request: NextRequest) {
 
     console.log('POST /api/bills - 准备保存的数据:', billData);
 
-    let bill;
-    if (existingBill) {
-      // 如果存在现有记录，则更新它
-      console.log('POST /api/bills - 更新现有记录');
-      bill = await prisma.bill.update({
-        where: { id: existingBill.id },
-        data: billData
-      });
-    } else {
-      // 如果不存在现有记录，则创建新记录
-      console.log('POST /api/bills - 创建新记录');
-      bill = await prisma.bill.create({
-        data: billData
-      });
-    }
+    // 每次都创建新记录，保存历史更新
+    console.log('POST /api/bills - 创建新记录');
+    const bill = await prisma.bill.create({
+      data: billData
+    });
 
     console.log('POST /api/bills - 数据库操作完成:', bill);
 
