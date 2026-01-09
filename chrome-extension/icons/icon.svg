@@ -1,0 +1,17 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景圆形 -->
+  <circle cx="64" cy="64" r="60" fill="#3b82f6" />
+
+  <!-- 钱袋图标 -->
+  <path d="M 40 60 L 40 90 C 40 95 45 100 50 100 L 78 100 C 83 100 88 95 88 90 L 88 60 Z" fill="white" />
+
+  <!-- 钱袋的绳子 -->
+  <path d="M 40 60 C 40 50 50 45 64 45 C 78 45 88 50 88 60" fill="none" stroke="white" stroke-width="3" />
+
+  <!-- 货币符号 -->
+  <text x="64" y="82" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#3b82f6" text-anchor="middle">¥</text>
+
+  <!-- 装饰性圆点 -->
+  <circle cx="52" cy="55" r="3" fill="#3b82f6" opacity="0.6" />
+  <circle cx="76" cy="55" r="3" fill="#3b82f6" opacity="0.6" />
+</svg>

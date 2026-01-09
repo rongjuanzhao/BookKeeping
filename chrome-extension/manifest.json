@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "简易记账",
+  "version": "1.0.0",
+  "description": "个人资产管理和记账工具，支持资产更新记录和桑基图可视化",
+  "permissions": [
+    "storage",
+    "unlimitedStorage"
+  ],
+  "action": {
+    "default_popup": "popup_small.html",
+    "default_title": "打开简易记账"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
